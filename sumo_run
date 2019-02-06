@@ -1,0 +1,76 @@
+#!/bin/bash
+#
+# SUMO_RUN: Run loop over SUSE-SUMO-SUIB
+# ============================================== 
+# Jon Grumer, Uppsala University, 2019
+# jongrumer@gmail.com / jon.grumer@physics.uu.se
+
+# Instructions
+# ------------
+#     0 : Make sure you have installed libblas-dev, liblapack-dev and openmpi-dev
+#     1 : Setup the SUMO Makefile and compile all binaries with 'make all'
+#     2 : Define and export the variable $SUMODIR (the SUMO root directory), in e.g. ~/.bashrc
+#     3 : Add $SUMODIR to your PATH, e.g. in ~/.bashrc, to make all executbles available
+#     4 : Make and cd to a dir where you are going to carry out the calculation
+#     5 : Setup the main parameters below, and run this script.
+
+# Setup - Main Parameters
+# -----------------------
+# Example: 1 4 4 example iptest2_600 y n 500 10000 1 100000000 1 1 1
+# Arg 1 : Max Iterations
+          NMAX_ITER=1                    
+#     2 : Nr + 1 (also make sure Nr in INFILE is NR_PLUS_ONE - 1)
+          NR_PLUS_ONE=4                    
+#     3 : Number of procs for MC
+          NPPROC_MC=4                    
+#     4 : Case Identifier
+          ID="example"             
+#     5 : Input file
+          INFILE="iptest2_600"
+#     6 : Do gamma dep?
+          GAMMADEP="y"
+#     7 : Iterative?
+          ITERATIVE="n"
+#     8 : wl min
+          WLMIN=500
+#     9 : wl max
+          WLMAX=10000
+#    10 : res 1000
+          RES1000=1
+#    11 : N total
+          NTOT=100000000
+#    12 : min send
+          MIN_SEND=1
+#    13 : min send UV
+          MIN_SEND_UV=1
+#    14 : maxsend
+          MAX_SEND=1
+
+# Setup - Folder structure (should be ok)
+# ---------------------------------------
+#     1 : Export 'DD' dir
+export DD=$PWD/dd
+#     2 : Create 'DD' directories:
+mkdir -p $DD; mkdir -p $DD/mcphotons; mkdir -p $DD/mcphotons/radfield; mkdir -p $DD/modelspectra
+#     3 : Get 'DATA' dir if not present
+if [ ! -d "$PWD/DATA" ]; then 
+   cp -rp $SUMODIR/DATA .
+fi
+#     4 : Get 'out' dir if not present
+if [ ! -d "$PWD/out" ]; then 
+   cp -rp $SUMODIR/out .
+fi
+# Run iterate script
+# ------------------------------
+if hash iterate.sh 2>/dev/null
+then
+   iterate.sh $NMAX_ITER $NR_PLUS_ONE $NPPROC_MC $ID $INFILE $GAMMADEP $ITERATIVE $WLMIN $WLMAX $RES1000 $NTOT $MIN_SEND $MIN_SEND_UV $MAX_SEND 
+   #&> logfile &
+else
+   echo
+   echo " The SUMO script 'iterate.sh' was not found in your PATH!" 
+   echo
+   echo " Add SUMO root dir to the PATH variable, eg in '~/.bashrc',"
+   echo " and make sure all SUMO scripts and binaries are available."
+   echo
+fi
